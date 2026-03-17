@@ -60,54 +60,74 @@
       }
 
       .hud {
-        min-width: 200px;
-        background: transparent;
-        padding: 4px 0;
+        min-width: 260px;
+        background: var(--card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 10px 12px;
+        border: 1px solid rgba(17, 24, 39, 0.06);
       }
 
       .hudRow {
         display: flex;
         align-items: center;
-        gap: 6px;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 6px 8px;
+        border-radius: 12px;
+        background: rgba(99, 102, 241, 0.06);
       }
 
       .hudLabel {
         font-size: 14px;
-        color: #4b5563;
+        color: #374151;
         font-weight: 600;
       }
 
       .hudValue {
         font-variant-numeric: tabular-nums;
-        font-size: 24px;
+        font-size: 22px;
         font-weight: 800;
         color: #111827;
       }
 
       .timeBox {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        padding: 4px 0;
-        background: rgba(15, 23, 42, 0.9);
-        z-index: 20;
+        margin-top: 8px;
+      }
+
+      .timeRow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 13px;
+        color: #374151;
+        margin-bottom: 4px;
+      }
+
+      .timeRow strong {
+        font-size: 14px;
+      }
+
+      .timeValue {
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
       }
 
       .timeBarOuter {
         width: 100%;
-        height: 18px;
-        border-radius: 0;
-        background: #020617;
+        height: 14px;
+        border-radius: 999px;
+        background: #e5e7eb;
         overflow: hidden;
       }
 
       .timeBarInner {
         width: 100%;
         height: 100%;
-        background: #2563eb;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #22c55e 0%, #eab308 50%, #ef4444 100%);
         transform-origin: left center;
-        transition: width 120ms linear, background-color 160ms linear;
+        transition: width 120ms linear;
       }
 
       .timeBarInner.hit {
@@ -116,25 +136,18 @@
 
       @keyframes time-hit {
         0% {
-          background-color: #ef4444;
+          background: #ef4444;
         }
         40% {
-          background-color: #f97316;
+          background: #f97316;
         }
         100% {
-          background-color: #2563eb;
+          background: linear-gradient(90deg, #22c55e 0%, #eab308 50%, #ef4444 100%);
         }
-      }
-
-      .hudHint {
-        margin-top: 10px;
-        font-size: 15px;
-        color: var(--muted);
-        line-height: 1.45;
       }
 
       .board {
-        margin-top: 10px;
+        margin-top: 14px;
         position: relative;
         background: var(--card);
         border-radius: 24px;
@@ -538,14 +551,17 @@
             <div class="hudLabel">다음 숫자</div>
             <div class="hudValue" id="nextValue">1</div>
           </div>
+          <div class="timeBox">
+            <div class="timeRow">
+              <strong>남은 시간</strong>
+              <span class="timeValue" id="timeLabel">30.0초</span>
+            </div>
+            <div class="timeBarOuter">
+              <div class="timeBarInner" id="timeBar"></div>
+            </div>
+          </div>
         </div>
       </header>
-
-      <div class="timeBox">
-        <div class="timeBarOuter">
-          <div class="timeBarInner" id="timeBar"></div>
-        </div>
-      </div>
 
       <main class="board" id="board" aria-label="게임 화면">
         <div class="countdownOverlay" id="countdownOverlay" aria-hidden="true">
@@ -867,14 +883,11 @@
       }
 
       function updateTimeUI() {
+        const seconds = Math.max(0, remainingMs) / 1000;
+        timeLabel.textContent = seconds.toFixed(1) + "초";
         const stageTotal = getStageTimeMs(currentStage);
         const ratio = Math.max(0, Math.min(1, remainingMs / stageTotal));
         timeBar.style.width = ratio * 100 + "%";
-        // 파란색에서 빨간색으로 변화
-        const startHue = 220; // 파랑
-        const endHue = 0; // 빨강
-        const hue = startHue + (endHue - startHue) * (1 - ratio);
-        timeBar.style.backgroundColor = `hsl(${hue}, 85%, 55%)`;
       }
 
       function stopTimer() {
@@ -1006,10 +1019,6 @@
         } else {
           alert(text);
         }
-      });
-
-      otherGameBtn.addEventListener("click", () => {
-        alert("다른 게임은 준비 중입니다.");
       });
 
       quitBtn.addEventListener("click", () => {
