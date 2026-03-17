@@ -32,15 +32,15 @@
       .wrap {
         max-width: 980px;
         margin: 0 auto;
-        padding: 22px 18px 28px;
+        padding: 18px 12px 24px;
       }
 
       header {
         display: flex;
         align-items: flex-start;
         justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 14px;
+        gap: 10px;
+        margin-bottom: 10px;
       }
 
       .title {
@@ -49,85 +49,65 @@
 
       .title h1 {
         margin: 0;
-        font-size: clamp(26px, 3vw, 36px);
+        font-size: clamp(24px, 4vw, 34px);
         letter-spacing: -0.02em;
       }
 
       .title p {
-        margin: 10px 0 0;
-        font-size: clamp(16px, 2.2vw, 20px);
+        margin: 6px 0 0;
+        font-size: clamp(15px, 3vw, 18px);
         color: var(--muted);
       }
 
       .hud {
-        min-width: 260px;
-        background: var(--card);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        padding: 14px 14px;
-        border: 1px solid rgba(17, 24, 39, 0.06);
+        min-width: 200px;
+        background: transparent;
+        padding: 4px 0;
       }
 
       .hudRow {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        padding: 10px 10px;
-        border-radius: 14px;
-        background: rgba(99, 102, 241, 0.06);
+        gap: 6px;
       }
 
       .hudLabel {
-        font-size: 16px;
-        color: #374151;
-        font-weight: 650;
+        font-size: 14px;
+        color: #4b5563;
+        font-weight: 600;
       }
 
       .hudValue {
         font-variant-numeric: tabular-nums;
-        font-size: 22px;
+        font-size: 24px;
         font-weight: 800;
         color: #111827;
       }
 
       .timeBox {
-        margin-top: 10px;
-      }
-
-      .timeRow {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 15px;
-        color: #374151;
-        margin-bottom: 6px;
-      }
-
-      .timeRow strong {
-        font-size: 16px;
-      }
-
-      .timeValue {
-        font-variant-numeric: tabular-nums;
-        font-weight: 700;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding: 4px 0;
+        background: rgba(15, 23, 42, 0.9);
+        z-index: 20;
       }
 
       .timeBarOuter {
         width: 100%;
-        height: 14px;
-        border-radius: 999px;
-        background: #e5e7eb;
+        height: 18px;
+        border-radius: 0;
+        background: #020617;
         overflow: hidden;
       }
 
       .timeBarInner {
         width: 100%;
         height: 100%;
-        border-radius: inherit;
-        background: linear-gradient(90deg, #22c55e 0%, #eab308 50%, #ef4444 100%);
+        background: #2563eb;
         transform-origin: left center;
-        transition: width 120ms linear;
+        transition: width 120ms linear, background-color 160ms linear;
       }
 
       .timeBarInner.hit {
@@ -136,13 +116,13 @@
 
       @keyframes time-hit {
         0% {
-          background: #ef4444;
+          background-color: #ef4444;
         }
         40% {
-          background: #f97316;
+          background-color: #f97316;
         }
         100% {
-          background: linear-gradient(90deg, #22c55e 0%, #eab308 50%, #ef4444 100%);
+          background-color: #2563eb;
         }
       }
 
@@ -154,13 +134,13 @@
       }
 
       .board {
-        margin-top: 14px;
+        margin-top: 10px;
         position: relative;
         background: var(--card);
         border-radius: 24px;
         box-shadow: var(--shadow);
         border: 1px solid rgba(17, 24, 39, 0.06);
-        height: min(64vh, 620px);
+        height: min(68vh, 640px);
         min-height: 420px;
         overflow: hidden;
       }
@@ -173,14 +153,14 @@
 
       .numberBtn {
         position: absolute;
-        width: clamp(78px, 10vw, 104px);
-        height: clamp(78px, 10vw, 104px);
+        width: clamp(88px, 18vw, 120px);
+        height: clamp(88px, 18vw, 120px);
         border-radius: 999px;
         border: 2px solid rgba(37, 99, 235, 0.22);
         background: linear-gradient(180deg, #ffffff 0%, #f3f6ff 100%);
         box-shadow: 0 10px 18px rgba(37, 99, 235, 0.12);
         color: #0f172a;
-        font-size: clamp(30px, 4.5vw, 42px);
+        font-size: clamp(34px, 7vw, 48px);
         font-weight: 900;
         cursor: pointer;
         display: grid;
@@ -558,20 +538,14 @@
             <div class="hudLabel">다음 숫자</div>
             <div class="hudValue" id="nextValue">1</div>
           </div>
-          <div class="timeBox">
-            <div class="timeRow">
-              <strong>남은 시간</strong>
-              <span class="timeValue" id="timeLabel">30.0초</span>
-            </div>
-            <div class="timeBarOuter">
-              <div class="timeBarInner" id="timeBar"></div>
-            </div>
-          </div>
-          <div class="hudHint" id="hudHint">
-            각 스테이지마다 30초 안에 순서대로 눌러 주세요.<br />틀리면 화면이 흔들리고 1초가 깎입니다.
-          </div>
         </div>
       </header>
+
+      <div class="timeBox">
+        <div class="timeBarOuter">
+          <div class="timeBarInner" id="timeBar"></div>
+        </div>
+      </div>
 
       <main class="board" id="board" aria-label="게임 화면">
         <div class="countdownOverlay" id="countdownOverlay" aria-hidden="true">
@@ -586,14 +560,13 @@
             <div class="result" id="resultText"></div>
             <div class="actions">
               <button class="btn btnPrimary" id="primaryActionBtn" type="button">다음 스테이지</button>
-              <div class="subButtons">
-                <button class="btnSub" id="shareBtn" type="button">자랑하기</button>
-                <button class="btnSub alt" id="otherGameBtn" type="button">다른 게임 하기</button>
-              </div>
+              <button class="btnSub alt" id="shareBtn" type="button">내 두뇌 나이 자랑하기(카톡 공유)</button>
               <button class="btnGhostTiny" id="quitBtn" type="button">그만하기</button>
             </div>
             <div
+              id="adSlot"
               style="
+                display: none;
                 margin-top: 16px;
                 padding: 10px 12px;
                 border-radius: 14px;
@@ -603,14 +576,7 @@
                 color: #92400e;
               "
             >
-              💊 <strong>[광고]</strong>
-              <a
-                href="https://kr.iherb.com/search?kw=%EB%87%8C%EC%98%81%EC%96%91%EC%A0%9C"
-                target="_blank"
-                rel="noopener noreferrer"
-                style="color: inherit; text-decoration: underline; font-weight: 700"
-                >깜빡임이 걱정된다면? 아이허브 뇌영양제 베스트셀러 보기</a
-              >
+              💊 <strong>[광고 자리]</strong>
             </div>
           </div>
         </div>
@@ -628,7 +594,6 @@
       const resultText = document.getElementById("resultText");
       const primaryActionBtn = document.getElementById("primaryActionBtn");
       const shareBtn = document.getElementById("shareBtn");
-      const otherGameBtn = document.getElementById("otherGameBtn");
       const quitBtn = document.getElementById("quitBtn");
       const timeLabel = document.getElementById("timeLabel");
       const timeBar = document.getElementById("timeBar");
@@ -664,9 +629,10 @@
         // 중간 결과에서는 부제목(본문) 제거
         resultText.innerHTML = "";
         primaryActionBtn.textContent = "다음 스테이지";
-        // 중간 결과에서는 자랑하기/다른 게임 하기 숨김
+        // 중간 결과에서는 자랑하기 숨김 및 광고 숨김
         shareBtn.style.display = "none";
-        otherGameBtn.style.display = "none";
+        const adSlot = document.getElementById("adSlot");
+        if (adSlot) adSlot.style.display = "none";
         overlay.classList.add("show");
         primaryActionBtn.focus();
       }
@@ -751,9 +717,10 @@
           </div>
         `;
         primaryActionBtn.textContent = "다시 하기";
-        // 최종 결과 페이지에서만 자랑하기/다른 게임 하기 노출
-        shareBtn.style.display = "inline-block";
-        otherGameBtn.style.display = "inline-block";
+        // 최종 결과 페이지에서만 자랑하기/광고 노출
+        shareBtn.style.display = "block";
+        const adSlot = document.getElementById("adSlot");
+        if (adSlot) adSlot.style.display = "block";
         overlay.classList.add("show");
         primaryActionBtn.focus();
         // 원형 게이지 업데이트
@@ -900,10 +867,14 @@
       }
 
       function updateTimeUI() {
-        const seconds = Math.max(0, remainingMs) / 1000;
-        timeLabel.textContent = seconds.toFixed(1) + "초";
-        const ratio = Math.max(0, Math.min(1, remainingMs / BASE_TIME_MS));
+        const stageTotal = getStageTimeMs(currentStage);
+        const ratio = Math.max(0, Math.min(1, remainingMs / stageTotal));
         timeBar.style.width = ratio * 100 + "%";
+        // 파란색에서 빨간색으로 변화
+        const startHue = 220; // 파랑
+        const endHue = 0; // 빨강
+        const hue = startHue + (endHue - startHue) * (1 - ratio);
+        timeBar.style.backgroundColor = `hsl(${hue}, 85%, 55%)`;
       }
 
       function stopTimer() {
@@ -1024,8 +995,8 @@
 
       shareBtn.addEventListener("click", () => {
         const highest = bestStageCleared;
-        const brainAge = getBrainAgeLabel(highest);
-        const text = `숫자 순서대로 클릭하기 게임에서 총 ${highest}단계 돌파! (두뇌 나이: ${brainAge})`;
+        const brainAge = getBrainAgeLabel(highest, wrongCount);
+        const text = `숫자 순서대로 클릭하기 훈련에서 총 ${highest}단계 돌파!\n두뇌 나이: ${brainAge}`;
         if (navigator.share) {
           navigator
             .share({ title: "숫자 순서대로 클릭하기", text })
