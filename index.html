@@ -1,0 +1,1070 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>숫자 순서대로 클릭하기</title>
+    <style>
+      :root {
+        --bg: #f6f7fb;
+        --card: #ffffff;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --primary: #2563eb;
+        --danger: #dc2626;
+        --ring: rgba(37, 99, 235, 0.25);
+        --shadow: 0 10px 25px rgba(17, 24, 39, 0.08);
+        --radius: 18px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Helvetica, Arial,
+          "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+        background: radial-gradient(1200px 800px at 20% 0%, #eef2ff 0%, var(--bg) 55%, #f9fafb 100%);
+        color: var(--text);
+      }
+
+      .wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 22px 18px 28px;
+      }
+
+      header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .title {
+        line-height: 1.15;
+      }
+
+      .title h1 {
+        margin: 0;
+        font-size: clamp(26px, 3vw, 36px);
+        letter-spacing: -0.02em;
+      }
+
+      .title p {
+        margin: 10px 0 0;
+        font-size: clamp(16px, 2.2vw, 20px);
+        color: var(--muted);
+      }
+
+      .hud {
+        min-width: 260px;
+        background: var(--card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 14px 14px;
+        border: 1px solid rgba(17, 24, 39, 0.06);
+      }
+
+      .hudRow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 10px;
+        border-radius: 14px;
+        background: rgba(99, 102, 241, 0.06);
+      }
+
+      .hudLabel {
+        font-size: 16px;
+        color: #374151;
+        font-weight: 650;
+      }
+
+      .hudValue {
+        font-variant-numeric: tabular-nums;
+        font-size: 22px;
+        font-weight: 800;
+        color: #111827;
+      }
+
+      .timeBox {
+        margin-top: 10px;
+      }
+
+      .timeRow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 15px;
+        color: #374151;
+        margin-bottom: 6px;
+      }
+
+      .timeRow strong {
+        font-size: 16px;
+      }
+
+      .timeValue {
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+      }
+
+      .timeBarOuter {
+        width: 100%;
+        height: 14px;
+        border-radius: 999px;
+        background: #e5e7eb;
+        overflow: hidden;
+      }
+
+      .timeBarInner {
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #22c55e 0%, #eab308 50%, #ef4444 100%);
+        transform-origin: left center;
+        transition: width 120ms linear;
+      }
+
+      .timeBarInner.hit {
+        animation: time-hit 350ms ease-out;
+      }
+
+      @keyframes time-hit {
+        0% {
+          background: #ef4444;
+        }
+        40% {
+          background: #f97316;
+        }
+        100% {
+          background: linear-gradient(90deg, #22c55e 0%, #eab308 50%, #ef4444 100%);
+        }
+      }
+
+      .hudHint {
+        margin-top: 10px;
+        font-size: 15px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+
+      .board {
+        margin-top: 14px;
+        position: relative;
+        background: var(--card);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+        border: 1px solid rgba(17, 24, 39, 0.06);
+        height: min(64vh, 620px);
+        min-height: 420px;
+        overflow: hidden;
+      }
+
+      .boardInner {
+        position: absolute;
+        inset: 0;
+        padding: 18px;
+      }
+
+      .numberBtn {
+        position: absolute;
+        width: clamp(78px, 10vw, 104px);
+        height: clamp(78px, 10vw, 104px);
+        border-radius: 999px;
+        border: 2px solid rgba(37, 99, 235, 0.22);
+        background: linear-gradient(180deg, #ffffff 0%, #f3f6ff 100%);
+        box-shadow: 0 10px 18px rgba(37, 99, 235, 0.12);
+        color: #0f172a;
+        font-size: clamp(30px, 4.5vw, 42px);
+        font-weight: 900;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .numberBtn:focus-visible {
+        outline: 4px solid var(--ring);
+        outline-offset: 3px;
+      }
+
+      .numberBtn.correct {
+        background: linear-gradient(180deg, #ecfeff 0%, #e0f2fe 100%);
+        border-color: rgba(34, 211, 238, 0.55);
+        box-shadow: 0 10px 18px rgba(14, 165, 233, 0.16);
+      }
+
+      .numberBtn.hidden {
+        opacity: 0;
+        transform: scale(0.85);
+        pointer-events: none;
+      }
+
+      .shake {
+        animation: shake 380ms ease-in-out;
+      }
+
+      @keyframes shake {
+        0% {
+          transform: translateX(0);
+        }
+        15% {
+          transform: translateX(-10px);
+        }
+        30% {
+          transform: translateX(10px);
+        }
+        45% {
+          transform: translateX(-8px);
+        }
+        60% {
+          transform: translateX(8px);
+        }
+        75% {
+          transform: translateX(-5px);
+        }
+        100% {
+          transform: translateX(0);
+        }
+      }
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.55);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+      }
+
+      .overlay.show {
+        display: flex;
+      }
+
+      .dialog {
+        width: min(560px, 100%);
+        background: var(--card);
+        border-radius: 22px;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+        border: 1px solid rgba(17, 24, 39, 0.08);
+        padding: 18px 18px 16px;
+      }
+
+      .dialog h2 {
+        margin: 6px 0 0;
+        font-size: clamp(22px, 3.2vw, 30px);
+        letter-spacing: -0.02em;
+      }
+
+      .result {
+        margin: 10px 0 0;
+        font-size: clamp(18px, 2.6vw, 22px);
+        color: #111827;
+        line-height: 1.45;
+      }
+
+      .result strong {
+        font-variant-numeric: tabular-nums;
+      }
+
+      .actions {
+        margin-top: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .btn {
+        border: 0;
+        border-radius: 16px;
+        cursor: pointer;
+      }
+
+      .btnPrimary {
+        display: block;
+        width: 100%;
+        padding: 18px 18px;
+        font-size: 22px;
+        font-weight: 900;
+        background: linear-gradient(135deg, #22c55e, #a3e635);
+        color: #022c22;
+        box-shadow: 0 14px 30px rgba(34, 197, 94, 0.45);
+      }
+
+      .btnPrimary:focus-visible {
+        outline: 4px solid rgba(52, 211, 153, 0.7);
+        outline-offset: 3px;
+      }
+
+      .subButtons {
+        display: flex;
+        gap: 8px;
+      }
+
+      .btnSub {
+        flex: 1;
+        padding: 10px 10px;
+        font-size: 16px;
+        font-weight: 700;
+        background: #111827;
+        color: #f9fafb;
+      }
+
+      .btnSub.alt {
+        background: #f97316;
+        color: #111827;
+      }
+
+      .btnGhostTiny {
+        margin-top: 4px;
+        padding: 6px 8px;
+        font-size: 13px;
+        font-weight: 500;
+        background: transparent;
+        border-radius: 999px;
+        border: 1px solid rgba(156, 163, 175, 0.6);
+        color: #9ca3af;
+        align-self: flex-end;
+      }
+
+      .srOnly {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .shake {
+          animation: none;
+        }
+      }
+
+      /* 화면 빨간색 깜빡임 효과 */
+      .flashRed {
+        animation: flash-red 260ms ease-in-out;
+      }
+
+      @keyframes flash-red {
+        0% {
+          box-shadow: inset 0 0 0 0 rgba(248, 113, 113, 0.85);
+        }
+        50% {
+          box-shadow: inset 0 0 0 999px rgba(248, 113, 113, 0.35);
+          background-color: #fee2e2;
+        }
+        100% {
+          box-shadow: inset 0 0 0 0 rgba(248, 113, 113, 0);
+        }
+      }
+
+      /* 시작 가이드 오버레이 */
+      .introOverlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.82);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        z-index: 30;
+      }
+
+      .introCard {
+        width: min(640px, 100%);
+        background: #ffffff;
+        color: #0f172a;
+        border-radius: 24px;
+        padding: 26px 24px 20px;
+        box-shadow: 0 28px 80px rgba(15, 23, 42, 0.4);
+        border: 2px solid #2563eb;
+      }
+
+      .introBadge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: #dbeafe;
+        color: #1d4ed8;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .introCard h2 {
+        margin: 0 0 10px;
+        font-size: clamp(26px, 3.6vw, 32px);
+        letter-spacing: -0.03em;
+        color: #0f172a;
+      }
+
+      .introMain {
+        font-size: clamp(20px, 2.8vw, 24px);
+        margin-bottom: 10px;
+        color: #1f2937;
+      }
+
+      .introMain strong {
+        color: #1d4ed8;
+      }
+
+      .introSub {
+        font-size: 16px;
+        color: #4b5563;
+        margin: 0 0 12px;
+      }
+
+      .introList {
+        margin: 0 0 14px;
+        padding-left: 18px;
+        font-size: 16px;
+        color: #374151;
+      }
+
+      .introList li + li {
+        margin-top: 4px;
+      }
+
+      .introEm {
+        font-size: 15px;
+        color: #1d4ed8;
+      }
+
+      .introActions {
+        margin-top: 14px;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .countdownOverlay {
+        position: absolute;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 50% 20%, rgba(248, 250, 252, 0.9), rgba(15, 23, 42, 0.7));
+        z-index: 10;
+      }
+
+      .countdownOverlay.show {
+        display: flex;
+      }
+
+      .countdownText {
+        font-size: clamp(60px, 10vw, 90px);
+        font-weight: 900;
+        color: #facc15;
+        text-shadow: 0 8px 26px rgba(0, 0, 0, 0.7);
+      }
+
+      .brainRow {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-top: 10px;
+      }
+
+      .brainIconWrap {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 20%, #bfdbfe, #1e3a8a);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .brainIcon {
+        width: 34px;
+        height: 34px;
+      }
+
+      .brainFront {
+        animation: front-glow 1.4s ease-in-out infinite alternate;
+      }
+
+      @keyframes front-glow {
+        from {
+          fill: #f97316;
+        }
+        to {
+          fill: #fed7aa;
+        }
+      }
+
+      .gaugeWrap {
+        margin-top: 14px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .gaugeSvg {
+        width: 80px;
+        height: 80px;
+      }
+
+      .gaugeLabel {
+        font-size: 15px;
+        color: #4b5563;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="introOverlay" id="introOverlay" role="dialog" aria-modal="true">
+      <div class="introCard">
+        <div class="introBadge">두뇌 훈련 · 전두엽 집중</div>
+        <h2>숫자 순서대로 클릭 훈련</h2>
+        <p class="introMain">
+          이 게임은 <strong>전두엽의 주의력과 시각 탐색 능력</strong>을 강화합니다.
+        </p>
+        <p class="introSub">
+          화면 속 숫자를 차례대로 빠르고 정확하게 찾으면서, 집중력과 단기 기억력을 함께 훈련해 보세요.
+        </p>
+        <ul class="introList">
+          <li>스테이지마다 숫자가 늘어나고, 제한 시간은 10%씩 줄어듭니다.</li>
+          <li>틀린 숫자를 누르면 시간이 줄어들고, 남은 시간 게이지가 빨갛게 반응합니다.</li>
+          <li>시간이 0이 되면 이번 훈련 결과에 대한 분석이 제공됩니다.</li>
+        </ul>
+        <p class="introEm">준비되셨다면 아래 버튼을 눌러 훈련을 시작해 주세요.</p>
+        <div class="introActions">
+          <button class="btn btnPrimary" id="introStartBtn" type="button">게임 시작</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <header>
+        <div class="title">
+          <h1>숫자 순서대로 클릭하기</h1>
+          <p>숫자를 1부터 끝까지 차례대로 눌러 주세요.</p>
+        </div>
+        <div class="hud" aria-live="polite">
+          <div class="hudRow">
+            <div class="hudLabel">다음 숫자</div>
+            <div class="hudValue" id="nextValue">1</div>
+          </div>
+          <div class="timeBox">
+            <div class="timeRow">
+              <strong>남은 시간</strong>
+              <span class="timeValue" id="timeLabel">30.0초</span>
+            </div>
+            <div class="timeBarOuter">
+              <div class="timeBarInner" id="timeBar"></div>
+            </div>
+          </div>
+          <div class="hudHint" id="hudHint">
+            각 스테이지마다 30초 안에 순서대로 눌러 주세요.<br />틀리면 화면이 흔들리고 1초가 깎입니다.
+          </div>
+        </div>
+      </header>
+
+      <main class="board" id="board" aria-label="게임 화면">
+        <div class="countdownOverlay" id="countdownOverlay" aria-hidden="true">
+          <div class="countdownText" id="countdownText">3</div>
+        </div>
+        <div class="boardInner" id="boardInner"></div>
+
+        <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+          <div class="dialog">
+            <div class="srOnly" id="resultTitle">결과</div>
+            <h2 id="resultHeading">결과</h2>
+            <div class="result" id="resultText"></div>
+            <div class="actions">
+              <button class="btn btnPrimary" id="primaryActionBtn" type="button">다음 스테이지</button>
+              <div class="subButtons">
+                <button class="btnSub" id="shareBtn" type="button">자랑하기</button>
+                <button class="btnSub alt" id="otherGameBtn" type="button">다른 게임 하기</button>
+              </div>
+              <button class="btnGhostTiny" id="quitBtn" type="button">그만하기</button>
+            </div>
+            <div
+              style="
+                margin-top: 16px;
+                padding: 10px 12px;
+                border-radius: 14px;
+                background: #fef3c7;
+                border: 1px dashed #facc15;
+                font-size: 15px;
+                color: #92400e;
+              "
+            >
+              💊 <strong>[광고]</strong>
+              <a
+                href="https://kr.iherb.com/search?kw=%EB%87%8C%EC%98%81%EC%96%91%EC%A0%9C"
+                target="_blank"
+                rel="noopener noreferrer"
+                style="color: inherit; text-decoration: underline; font-weight: 700"
+                >깜빡임이 걱정된다면? 아이허브 뇌영양제 베스트셀러 보기</a
+              >
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const BASE_MAX_NUM = 8;
+      const BASE_TIME_MS = 30_000;
+      const board = document.getElementById("board");
+      const boardInner = document.getElementById("boardInner");
+      const nextValueEl = document.getElementById("nextValue");
+      const overlay = document.getElementById("overlay");
+      const resultHeading = document.getElementById("resultHeading");
+      const resultText = document.getElementById("resultText");
+      const primaryActionBtn = document.getElementById("primaryActionBtn");
+      const shareBtn = document.getElementById("shareBtn");
+      const otherGameBtn = document.getElementById("otherGameBtn");
+      const quitBtn = document.getElementById("quitBtn");
+      const timeLabel = document.getElementById("timeLabel");
+      const timeBar = document.getElementById("timeBar");
+      const introOverlay = document.getElementById("introOverlay");
+      const introStartBtn = document.getElementById("introStartBtn");
+      const countdownOverlay = document.getElementById("countdownOverlay");
+      const countdownText = document.getElementById("countdownText");
+
+      let currentStage = 1;
+      let maxNumThisStage = BASE_MAX_NUM;
+      let expected = 1;
+      let startedAt = null;
+      let finished = false;
+      let lastLayoutKey = "";
+      let remainingMs = BASE_TIME_MS;
+      let timerId = null;
+      let overlayMode = "stageClear"; // or "gameOver"
+      let bestStageCleared = 0;
+      let wrongCount = 0;
+
+      function fmtSeconds(ms) {
+        return (ms / 1000).toFixed(2) + "초";
+      }
+
+      function hideOverlay() {
+        overlay.classList.remove("show");
+      }
+
+      function showStageClear(elapsedMs) {
+        overlayMode = "stageClear";
+        bestStageCleared = Math.max(bestStageCleared, currentStage);
+        resultHeading.textContent = `스테이지 ${currentStage}단계 완료`;
+        // 중간 결과에서는 부제목(본문) 제거
+        resultText.innerHTML = "";
+        primaryActionBtn.textContent = "다음 스테이지";
+        // 중간 결과에서는 자랑하기/다른 게임 하기 숨김
+        shareBtn.style.display = "none";
+        otherGameBtn.style.display = "none";
+        overlay.classList.add("show");
+        primaryActionBtn.focus();
+      }
+
+      function showGameOver() {
+        overlayMode = "gameOver";
+        const highest = bestStageCleared;
+        const brainAge = getBrainAgeLabel(highest, wrongCount);
+        resultHeading.textContent = "두뇌 테스트 결과";
+        const percentile = getPerformancePercentile(highest, wrongCount);
+        resultText.innerHTML = `
+          <p style="margin: 4px 0 4px; font-size: 20px;">
+            ⏱️ 시간 종료!<br />
+            <strong>총 ${highest}단계 돌파 · 두뇌 나이 ${brainAge}</strong>
+          </p>
+          <div class="brainRow">
+            <div class="brainIconWrap" aria-hidden="true">
+              <svg class="brainIcon" viewBox="0 0 64 64">
+                <path
+                  d="M22 10c-5 0-9 4-9 9v2c-4 1-7 5-7 9 0 4 2.5 7.4 6 8.7V40c0 6 4.5 11 10 11h2"
+                  fill="#bfdbfe"
+                />
+                <path
+                  class="brainFront"
+                  d="M42 10c5 0 9 4 9 9v2c4 1 7 5 7 9 0 4-2.5 7.4-6 8.7V40c0 6-4.5 11-10 11h-4"
+                  fill="#f97316"
+                />
+              </svg>
+            </div>
+            <div>
+              <p style="margin: 0 0 4px; font-size: 15px; color: #4b5563;">
+                이번 훈련에서 전두엽이 특히 많이 사용되었습니다. 주의력과 시각 탐색 능력이 잘 작동하고 있습니다.
+              </p>
+              <p style="margin: 0; font-size: 15px; color: #1f2937;">
+                <strong>실생활 연결 설명</strong> · 방금 달성하신 기록은 단기 기억력 <strong>상위
+                ${percentile}%</strong> 수준입니다. 이 능력은 복잡한 곳에서 길을 찾거나, 집 안에서 물건의 위치를
+                기억하는 데 큰 도움을 줍니다.
+              </p>
+            </div>
+          </div>
+          <div class="gaugeWrap">
+            <svg class="gaugeSvg" viewBox="0 0 120 120" aria-hidden="true">
+              <circle
+                cx="60"
+                cy="60"
+                r="46"
+                stroke="#e5e7eb"
+                stroke-width="10"
+                fill="none"
+                stroke-linecap="round"
+              />
+              <circle
+                id="gaugeArc"
+                cx="60"
+                cy="60"
+                r="46"
+                stroke="#22c55e"
+                stroke-width="10"
+                fill="none"
+                stroke-linecap="round"
+                transform="rotate(-90 60 60)"
+                stroke-dasharray="289"
+                stroke-dashoffset="289"
+              />
+              <text
+                id="gaugeText"
+                x="60"
+                y="66"
+                text-anchor="middle"
+                font-size="20"
+                font-weight="700"
+                fill="#111827"
+              >
+                0%
+              </text>
+            </svg>
+            <div class="gaugeLabel">
+              현재 훈련 성취도는 대략
+              <strong>${percentile}%</strong> 수준입니다. 숫자를 더 많이, 더 정확하게 찾을수록 원형 게이지가
+              가득 차게 됩니다.
+            </div>
+          </div>
+        `;
+        primaryActionBtn.textContent = "다시 하기";
+        // 최종 결과 페이지에서만 자랑하기/다른 게임 하기 노출
+        shareBtn.style.display = "inline-block";
+        otherGameBtn.style.display = "inline-block";
+        overlay.classList.add("show");
+        primaryActionBtn.focus();
+        // 원형 게이지 업데이트
+        const arc = document.getElementById("gaugeArc");
+        const txt = document.getElementById("gaugeText");
+        if (arc && txt) {
+          const circ = 2 * Math.PI * 46; // r=46
+          const ratio = Math.max(0, Math.min(1, percentile / 100));
+          arc.setAttribute("stroke-dasharray", String(circ));
+          arc.setAttribute("stroke-dashoffset", String(circ * (1 - ratio)));
+          txt.textContent = `${percentile}%`;
+        }
+      }
+
+      function vibrateVisual() {
+        if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        board.classList.remove("shake");
+        // reflow to restart animation reliably
+        void board.offsetWidth;
+        board.classList.add("shake");
+      }
+
+      function flashRed() {
+        board.classList.remove("flashRed");
+        void board.offsetWidth;
+        board.classList.add("flashRed");
+      }
+
+      function getBoardRect() {
+        const r = boardInner.getBoundingClientRect();
+        return { width: r.width, height: r.height };
+      }
+
+      function randInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      function dist2(a, b) {
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        return dx * dx + dy * dy;
+      }
+
+      function placeWithoutOverlap(items, width, height) {
+        const btnSize = Math.min(104, Math.max(78, Math.floor(Math.min(width, height) * 0.16)));
+        const padding = 14;
+        const minGap = Math.floor(btnSize * 0.92);
+        const minGap2 = minGap * minGap;
+
+        const maxX = Math.max(padding, Math.floor(width - btnSize - padding));
+        const maxY = Math.max(padding, Math.floor(height - btnSize - padding));
+
+        const placed = [];
+        const attemptsPerItem = 450;
+
+        for (const n of items) {
+          let p = null;
+          for (let a = 0; a < attemptsPerItem; a++) {
+            const candidate = { x: randInt(padding, maxX), y: randInt(padding, maxY) };
+            let ok = true;
+            for (const other of placed) {
+              if (dist2(candidate, other) < minGap2) {
+                ok = false;
+                break;
+              }
+            }
+            if (ok) {
+              p = candidate;
+              break;
+            }
+          }
+          if (!p) {
+            // fallback: still place it, but keep inside bounds
+            p = { x: randInt(padding, maxX), y: randInt(padding, maxY) };
+          }
+          placed.push(p);
+        }
+
+        return { btnSize, placed };
+      }
+
+      function renderNumbers() {
+        boardInner.innerHTML = "";
+        const { width, height } = getBoardRect();
+
+        // avoid rerender loop if size is 0 (hidden)
+        if (!width || !height) return;
+
+        const nums = Array.from({ length: maxNumThisStage }, (_, i) => i + 1);
+        // shuffle
+        for (let i = nums.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [nums[i], nums[j]] = [nums[j], nums[i]];
+        }
+
+        const { btnSize, placed } = placeWithoutOverlap(nums, width, height);
+
+        nums.forEach((n, idx) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "numberBtn";
+          btn.textContent = String(n);
+          btn.setAttribute("aria-label", `${n} 버튼`);
+          btn.style.width = btnSize + "px";
+          btn.style.height = btnSize + "px";
+          btn.style.left = placed[idx].x + "px";
+          btn.style.top = placed[idx].y + "px";
+          btn.dataset.value = String(n);
+          btn.addEventListener("click", onNumberClick, { passive: true });
+          boardInner.appendChild(btn);
+        });
+
+        lastLayoutKey = `${Math.round(width)}x${Math.round(height)}`;
+      }
+
+      function onNumberClick(e) {
+        if (finished) return;
+        const btn = e.currentTarget;
+        const value = Number(btn.dataset.value);
+
+        if (startedAt === null) startedAt = performance.now();
+
+        if (value !== expected) {
+          vibrateVisual();
+          flashRed();
+          wrongCount += 1;
+          timeBar.classList.remove("hit");
+          void timeBar.offsetWidth;
+          timeBar.classList.add("hit");
+          deductTime(3000);
+          return;
+        }
+
+        btn.classList.add("correct", "hidden");
+        expected += 1;
+        nextValueEl.textContent = expected <= maxNumThisStage ? String(expected) : "끝!";
+
+        if (expected > maxNumThisStage) {
+          finished = true;
+          stopTimer();
+          const elapsed = performance.now() - startedAt;
+          showStageClear(elapsed);
+        }
+      }
+
+      function updateTimeUI() {
+        const seconds = Math.max(0, remainingMs) / 1000;
+        timeLabel.textContent = seconds.toFixed(1) + "초";
+        const ratio = Math.max(0, Math.min(1, remainingMs / BASE_TIME_MS));
+        timeBar.style.width = ratio * 100 + "%";
+      }
+
+      function stopTimer() {
+        if (timerId !== null) {
+          clearInterval(timerId);
+          timerId = null;
+        }
+      }
+
+      function getStageTimeMs(stage) {
+        const factor = Math.pow(0.9, Math.max(0, stage - 1)); // 스테이지마다 10%씩 단축
+        const raw = BASE_TIME_MS * factor;
+        return Math.max(5_000, raw); // 최소 5초
+      }
+
+      function startTimer() {
+        stopTimer();
+        remainingMs = getStageTimeMs(currentStage);
+        updateTimeUI();
+        timerId = setInterval(() => {
+          remainingMs -= 100;
+          if (remainingMs <= 0) {
+            remainingMs = 0;
+            updateTimeUI();
+            stopTimer();
+            finished = true;
+            showGameOver();
+          } else {
+            updateTimeUI();
+          }
+        }, 100);
+      }
+
+      function deductTime(ms) {
+        remainingMs -= ms;
+        if (remainingMs <= 0) {
+          remainingMs = 0;
+          updateTimeUI();
+          stopTimer();
+          finished = true;
+          showGameOver();
+        } else {
+          updateTimeUI();
+        }
+      }
+
+      function setupStage() {
+        maxNumThisStage = BASE_MAX_NUM + (currentStage - 1) * 2;
+        expected = 1;
+        startedAt = null;
+        finished = false;
+        wrongCount = 0;
+        nextValueEl.textContent = String(expected);
+        renderNumbers();
+        startTimer();
+      }
+
+      function resetGame() {
+        stopTimer();
+        currentStage = 1;
+        bestStageCleared = 0;
+        wrongCount = 0;
+        hideOverlay();
+        introOverlay.style.display = "flex";
+      }
+
+      function getBrainAgeLabel(stage, wrong) {
+        const s = Math.max(0, stage);
+        const w = Math.max(0, wrong);
+        let age = 80 - s * 3 + w * 2;
+        if (age < 20) age = 20;
+        if (age > 95) age = 95;
+        return `${age}세`;
+      }
+
+      function getPerformancePercentile(stage, wrong) {
+        const s = Math.max(0, stage);
+        const w = Math.max(0, wrong);
+        let base = 10 + s * 6; // 스테이지가 높을수록 상위 퍼센트가 좋아짐
+        base -= w * 2; // 오답이 많을수록 퍼센트가 떨어짐
+        if (base < 5) base = 5;
+        if (base > 90) base = 90;
+        return Math.round(base);
+      }
+
+      function startCountdownAndGame() {
+        introOverlay.style.display = "none";
+        countdownOverlay.classList.add("show");
+        let seq = ["3", "2", "1", "시작!"];
+        let idx = 0;
+        countdownText.textContent = seq[idx];
+        const id = setInterval(() => {
+          idx += 1;
+          if (idx >= seq.length) {
+            clearInterval(id);
+            countdownOverlay.classList.remove("show");
+            currentStage = 1;
+            setupStage();
+            return;
+          }
+          countdownText.textContent = seq[idx];
+        }, 800);
+      }
+
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) hideOverlay();
+      });
+      primaryActionBtn.addEventListener("click", () => {
+        if (overlayMode === "stageClear") {
+          currentStage += 1;
+          hideOverlay();
+          setupStage();
+        } else {
+          hideOverlay();
+          resetGame();
+        }
+      });
+
+      shareBtn.addEventListener("click", () => {
+        const highest = bestStageCleared;
+        const brainAge = getBrainAgeLabel(highest);
+        const text = `숫자 순서대로 클릭하기 게임에서 총 ${highest}단계 돌파! (두뇌 나이: ${brainAge})`;
+        if (navigator.share) {
+          navigator
+            .share({ title: "숫자 순서대로 클릭하기", text })
+            .catch(() => {
+              alert(text);
+            });
+        } else {
+          alert(text);
+        }
+      });
+
+      otherGameBtn.addEventListener("click", () => {
+        alert("다른 게임은 준비 중입니다.");
+      });
+
+      quitBtn.addEventListener("click", () => {
+        hideOverlay();
+      });
+
+      introStartBtn.addEventListener("click", startCountdownAndGame);
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && overlay.classList.contains("show")) hideOverlay();
+      });
+
+      // Re-layout on resize (keep it stable; only re-render when size changes)
+      window.addEventListener(
+        "resize",
+        () => {
+          const { width, height } = getBoardRect();
+          const key = `${Math.round(width)}x${Math.round(height)}`;
+          if (key && key !== lastLayoutKey) renderNumbers();
+        },
+        { passive: true }
+      );
+
+      // 첫 화면: 안내 팝업 먼저 표시
+      updateTimeUI();
+    </script>
+  </body>
+</html>
+
